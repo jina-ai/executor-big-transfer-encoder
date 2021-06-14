@@ -1,0 +1,6 @@
+jtype: BigTransferEncoder
+with:
+  {}
+metas:
+  py_modules:
+    - jinahub.image.encoder.big_transfer
