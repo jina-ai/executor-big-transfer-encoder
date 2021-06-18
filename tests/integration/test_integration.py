@@ -22,7 +22,7 @@ def data_generator(num_docs):
 
 
 def model_test(model_name, num_docs):
-    shutil.rmtree('pretrained')
+    shutil.rmtree('pretrained', ignore_errors=True)
     os.environ['TRANSFER_MODEL_NAME'] = model_name
     with Flow.load_config('flow.yml') as flow:
         data = flow.post(on='/index', inputs=data_generator(5), 

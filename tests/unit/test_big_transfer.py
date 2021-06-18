@@ -13,7 +13,7 @@ directory = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_initialization_and_model_download():
-    shutil.rmtree('pretrained')
+    shutil.rmtree('pretrained', ignore_errors=True)
     # This call will download the model
     encoder = BigTransferEncoder()
     assert encoder.channel_axis == 1
