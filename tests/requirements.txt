@@ -1,5 +1,1 @@
 pytest
-Pillow
-numpy
-# Install this from the root directory to work
-.

@@ -13,5 +13,6 @@ It uses a pretrained version of a BiT model to encode an image from an array of 
 The following parameters can be used:
 
 - `model_path` (string, default: "pretrained"): The folder where the downloaded pretrained Big Transfer model is located
+- `model_name` (string, default: "R50x1"): The model to be downloaded when the model_path is empty. Choose from ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
 - `channel_axis` (int): The axis where the channel of the images needs to be (model-dependent)
 - `on_gpu` (bool): Specifies whether the model should be used on GPU or CPU. To use GPU, tensorflow-gpu needs to be installed.

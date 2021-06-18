@@ -1,7 +1,13 @@
-FROM jinaai/jina:master
+FROM jinaai/jina:master as base
 
-ADD *.py *.yml requirements.txt ./
+COPY . ./big_transfer/
+WORKDIR ./big_transfer
 
-RUN pip install -r requirements.txt
+RUN pip install .
 
-ENTRYPOINT ["jina", "pod", "--uses", "config.yml"]
+FROM base
+RUN pip install -r tests/requirements.txt
+RUN pytest tests
+
+FROM base
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

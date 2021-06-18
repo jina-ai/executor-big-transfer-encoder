@@ -3,4 +3,4 @@ with:
   {}
 metas:
   py_modules:
-    - jinahub.image.encoder.big_transfer
+    - big_transfer.py
