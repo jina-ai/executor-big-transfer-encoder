@@ -24,9 +24,9 @@ def data_generator(num_docs):
 def model_test(model_name, num_docs):
     shutil.rmtree('pretrained', ignore_errors=True)
     os.environ['TRANSFER_MODEL_NAME'] = model_name
-    with Flow.load_config('flow.yml') as flow:
-        data = flow.post(on='/index', inputs=data_generator(5), 
-                         request_size=num_docs)
+    with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as flow:
+        data = flow.post(on='/index', inputs=data_generator(num_docs),
+                         request_size=10)
         docs = data[0].docs
         for doc in docs:
             assert doc.embedding is not None
@@ -34,4 +34,4 @@ def model_test(model_name, num_docs):
 
 def test_all_models():
     for model_name in ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']:
-        model_test(model_name, 10)
+        model_test(model_name, 100)

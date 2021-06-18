@@ -24,6 +24,9 @@ def test_initialization_and_model_download():
     assert os.path.exists(os.path.join('pretrained', 'saved_model.pb'))
     # This call will use the downloaded model
     _ = BigTransferEncoder()
+    shutil.rmtree('pretrained', ignore_errors=True)
+    with pytest.raises(AttributeError):
+        _ = BigTransferEncoder(model_name='model_not_exists')
 
 
 def test_encoding():
