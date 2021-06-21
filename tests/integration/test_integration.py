@@ -23,7 +23,7 @@ def data_generator(num_docs):
 
 
 @pytest.mark.parametrize(
-    'model_name', ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
+    'model_name', ['R50x1', 'R101x1', 'R50x3', 'R101x3']  #, 'R152x4']
 )
 def test_all_models(model_name: str):
     shutil.rmtree('pretrained', ignore_errors=True)
