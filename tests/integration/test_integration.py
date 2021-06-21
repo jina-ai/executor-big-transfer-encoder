@@ -1,5 +1,6 @@
 import os
 import shutil
+import pytest
 
 import PIL.Image as Image
 import numpy as np
@@ -21,17 +22,15 @@ def data_generator(num_docs):
         yield doc
 
 
-def model_test(model_name, num_docs):
+@pytest.mark.parametrize(
+    'model_name', ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
+)
+def test_all_models(model_name: str):
     shutil.rmtree('pretrained', ignore_errors=True)
     os.environ['TRANSFER_MODEL_NAME'] = model_name
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as flow:
-        data = flow.post(on='/index', inputs=data_generator(num_docs),
+        data = flow.post(on='/index', inputs=data_generator(100),
                          request_size=10)
         docs = data[0].docs
         for doc in docs:
             assert doc.embedding is not None
-
-
-def test_all_models():
-    for model_name in ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']:
-        model_test(model_name, 100)
