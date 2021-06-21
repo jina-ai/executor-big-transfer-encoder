@@ -73,6 +73,9 @@ class BigTransferEncoder(Executor):
             device_type='GPU')
         if self.on_gpu and len(gpus) > 0:
             cpus.append(gpus[0])
+        if self.on_gpu and len(gpus) == 0:
+            self.logger.warning('You tried to use a GPU but no GPU was found on'
+                                ' your system. Defaulting to CPU!')
         tf.config.experimental.set_visible_devices(devices=cpus)
         self.logger.info(f'BiT model path: {self.model_path}')
         _model = load_model(self.model_path)
