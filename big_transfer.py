@@ -48,20 +48,20 @@ class BigTransferEncoder(Executor):
         channel info at the last axis. If given other, then `
         `np.moveaxis(data, channel_axis, -1)`` is performed before :meth:`encode`.
 
-    :param default_traversal_path: Traversal path through the docs
+    :param default_traversal_paths: Traversal path through the docs
     :param default_batch_size: Batch size to be used in the encoder model
 
     :param: on_gpu: If true, the GPU will be used. Make sure to have
         tensorflow-gpu==2.5 installed
     """
-    DEFAULT_TRAVERSAL_PATH = 'r'
+    DEFAULT_TRAVERSAL_PATHS = ['r']
 
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
                  model_name: Optional[str] = 'R50x1',
                  channel_axis: int = 1,
                  on_gpu: bool = False,
-                 default_traversal_path: Optional[str] = None,
+                 default_traversal_paths: Optional[List[str]] = None,
                  default_batch_size: Optional[int] = None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,8 +71,8 @@ class BigTransferEncoder(Executor):
         self.on_gpu = on_gpu
         self.logger = default_logger
         self.default_batch_size = default_batch_size
-        self.default_traversal_path = self.DEFAULT_TRAVERSAL_PATH if default_traversal_path is None\
-            else default_traversal_path
+        self.default_traversal_paths = self.DEFAULT_TRAVERSAL_PATHS if default_traversal_paths is None\
+            else default_traversal_paths
 
         if not os.path.exists(self.model_path):
             self.download_model()
@@ -149,11 +149,11 @@ class BigTransferEncoder(Executor):
                 doc.embedding = output[index]
 
     def _get_docs_batch_generator(self, docs: DocumentArray, parameters: Dict):
-        traversal_path = parameters.get('traversal_path', self.default_traversal_path)
+        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
         batch_size = parameters.get('batch_size', self.default_batch_size)
         if batch_size is None:
             batch_size = docs.__len__()
-        flat_docs = docs.traverse_flat(traversal_path)
+        flat_docs = docs.traverse_flat(traversal_paths)
 
         filtered_docs = [doc for doc in flat_docs if doc is not None and doc.blob is not None]
 

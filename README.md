@@ -12,7 +12,7 @@ The following parameters can be used:
 - `on_gpu` (bool): Specifies whether the model should be used on GPU or CPU. To use GPU,
   put into one batch (limited by the request_size)
   either the GPU docker container needs to be used or you need to install CUDA 11.3 and cudnn8 (similar versions might also work)
-- `default_traversal_path` (str, default 'r'): Traversal path through the docs
+- `default_traversal_paths` (List[str], defaults to ['r']): Traversal path through the docs
 - `default_batch_size` (int): Batch size to be used in the encoder model. If not specified, all the documents are
  
 
@@ -117,6 +117,12 @@ pods:
 	from jina import Flow
 	
 	f = Flow().add(uses='docker://big-transfer-encoder-image:latest')
+    ```
+    Or, using the GPU image: 
+    ```python
+    from jina import Flow
+    
+    f = Flow().add(uses='docker://big-transfer-encoder-image', docker_kwargs={'runtime': 'nvidia'})
 	```
 	
 

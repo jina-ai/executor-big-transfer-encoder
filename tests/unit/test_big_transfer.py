@@ -55,7 +55,7 @@ def test_encoding_default_chunks():
         img = np.array(img).astype('float32') / 255
         doc.chunks[i].blob = img
 
-    encoder = BigTransferEncoder(default_traversal_path='c')
+    encoder = BigTransferEncoder(default_traversal_paths=['c'])
 
     encoder.encode(DocumentArray([doc]), {})
     assert doc.embedding is None
@@ -75,10 +75,10 @@ def test_encoding_override_chunks():
         doc.chunks[i].blob = img
 
     encoder = BigTransferEncoder()
-    assert encoder.default_traversal_path == 'r'
+    assert encoder.default_traversal_paths == ['r']
 
     encoder.encode(DocumentArray([doc]),
-                   parameters={'traversal_path': 'c'})
+                   parameters={'traversal_paths': 'c'})
     assert doc.embedding is None
     for i in range(3):
         assert doc.chunks[i].embedding.shape == (2048,)
