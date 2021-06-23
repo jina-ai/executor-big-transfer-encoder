@@ -40,5 +40,45 @@ def test_encoding():
 
     encoder = BigTransferEncoder()
 
-    encoded_doc = encoder.encode(DocumentArray([doc]))
-    assert encoded_doc[0].embedding.shape == (2048,)
+    encoder.encode(DocumentArray([doc]), {})
+    assert doc.embedding.shape == (2048,)
+
+
+def test_encoding_default_chunks():
+    doc = Document(text="testing")
+    chunk = Document(uri=os.path.join(directory, '../data/test_image.png'))
+    for i in range(3):
+        doc.chunks.append(chunk)
+        doc.chunks[i].convert_image_uri_to_blob()
+        img = Image.fromarray(doc.chunks[i].blob.astype('uint8'))
+        img = img.resize((96, 96))
+        img = np.array(img).astype('float32') / 255
+        doc.chunks[i].blob = img
+
+    encoder = BigTransferEncoder(default_traversal_path='c')
+
+    encoder.encode(DocumentArray([doc]), {})
+    assert doc.embedding is None
+    for i in range(3):
+        assert doc.chunks[i].embedding.shape == (2048,)
+
+
+def test_encoding_override_chunks():
+    doc = Document(text="testing")
+    chunk = Document(uri=os.path.join(directory, '../data/test_image.png'))
+    for i in range(3):
+        doc.chunks.append(chunk)
+        doc.chunks[i].convert_image_uri_to_blob()
+        img = Image.fromarray(doc.chunks[i].blob.astype('uint8'))
+        img = img.resize((96, 96))
+        img = np.array(img).astype('float32') / 255
+        doc.chunks[i].blob = img
+
+    encoder = BigTransferEncoder()
+    assert encoder.default_traversal_path == 'r'
+
+    encoder.encode(DocumentArray([doc]),
+                   parameters={'traversal_path': 'c'})
+    assert doc.embedding is None
+    for i in range(3):
+        assert doc.chunks[i].embedding.shape == (2048,)

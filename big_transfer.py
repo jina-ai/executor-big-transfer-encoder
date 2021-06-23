@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Optional
+from typing import Optional, Dict, List, Any
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.models import load_model
@@ -51,11 +51,15 @@ class BigTransferEncoder(Executor):
     :param: on_gpu: If true, the GPU will be used. Make sure to have
         tensorflow-gpu==2.5 installed
     """
+    DEFAULT_TRAVERSAL_PATH = 'r'
+
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
                  model_name: Optional[str] = 'R50x1',
                  channel_axis: int = 1,
                  on_gpu: bool = False,
+                 default_traversal_path: Optional[str] = None,
+                 default_batch_size: Optional[int] = None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.channel_axis = channel_axis
@@ -63,6 +67,9 @@ class BigTransferEncoder(Executor):
         self.model_name = model_name
         self.on_gpu = on_gpu
         self.logger = default_logger
+        self.default_batch_size = default_batch_size
+        self.default_traversal_path = self.DEFAULT_TRAVERSAL_PATH if default_traversal_path is None\
+            else default_traversal_path
 
         if not os.path.exists(self.model_path):
             self.download_model()
@@ -117,21 +124,39 @@ class BigTransferEncoder(Executor):
         self.logger.info(f'Completed download of {self.model_name} BiT model')
 
     @requests
-    def encode(self, docs: DocumentArray, **kwargs) -> DocumentArray:
+    def encode(self, docs: DocumentArray, parameters: Dict, **kwargs):
         """
         Encode data into a ndarray of `B x D`.
         Where `B` is the batch size and `D` is the Dimension.
 
         :param docs: an array in size `B`
+        :param parameters: parameters dictionary
         :return: an ndarray in size `B x D`.
         """
-        data = np.zeros((docs.__len__(),) + docs[0].blob.shape)
-        for index, doc in enumerate(docs):
-            data[index] = doc.blob
-        if self.channel_axis != -1:
-            data = np.moveaxis(data, self.channel_axis, -1)
-        _output = self.model(self._get_input(data.astype(np.float32)))
-        output = _output['output_1'].numpy()
-        for index, doc in enumerate(docs):
-            doc.embedding = output[index]
-        return docs
+        docs_batch_generator = self._get_docs_batch_generator(docs, parameters)
+        for batch in docs_batch_generator:
+            data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
+            for index, doc in enumerate(batch):
+                data[index] = doc.blob
+            if self.channel_axis != -1:
+                data = np.moveaxis(data, self.channel_axis, -1)
+            _output = self.model(self._get_input(data.astype(np.float32)))
+            output = _output['output_1'].numpy()
+            for index, doc in enumerate(batch):
+                doc.embedding = output[index]
+
+    def _get_docs_batch_generator(self, docs: DocumentArray, parameters: Dict):
+        traversal_path = parameters.get('traversal_path', self.default_traversal_path)
+        batch_size = parameters.get('batch_size', self.default_batch_size)
+        if batch_size is None:
+            batch_size = docs.__len__()
+        flat_docs = docs.traverse_flat(traversal_path)
+
+        filtered_docs = [doc for doc in flat_docs if doc is not None and doc.blob is not None]
+
+        return _batch_generator(filtered_docs, batch_size)
+
+
+def _batch_generator(data: List[Any], batch_size: Optional[int]):
+    for i in range(0, len(data), batch_size):
+        yield data[i:min(i + batch_size, len(data))]
