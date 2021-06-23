@@ -41,4 +41,4 @@ def test_encoding():
     encoder = BigTransferEncoder()
 
     encoded_doc = encoder.encode(DocumentArray([doc]))
-    assert encoded_doc[0].embedding is not None
+    assert encoded_doc[0].embedding.shape == (2048,)
