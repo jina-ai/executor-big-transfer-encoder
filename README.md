@@ -10,7 +10,10 @@ The following parameters can be used:
 - `model_name` (string, default: "R50x1"): The model to be downloaded when the model_path is empty. Choose from ['R50x1', 'R101x1', 'R50x3', 'R101x3', 'R152x4']
 - `channel_axis` (int): The axis where the channel of the images needs to be (model-dependent)
 - `on_gpu` (bool): Specifies whether the model should be used on GPU or CPU. To use GPU,
-either the GPU docker container needs to be used or you need to install CUDA 11.3 and cudnn8 (similar versions might also work)
+  put into one batch (limited by the request_size)
+  either the GPU docker container needs to be used or you need to install CUDA 11.3 and cudnn8 (similar versions might also work)
+- `default_traversal_path` (str, default 'r'): Traversal path through the docs
+- `default_batch_size` (int): Batch size to be used in the encoder model. If not specified, all the documents are
  
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->

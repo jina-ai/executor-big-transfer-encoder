@@ -48,6 +48,9 @@ class BigTransferEncoder(Executor):
         channel info at the last axis. If given other, then `
         `np.moveaxis(data, channel_axis, -1)`` is performed before :meth:`encode`.
 
+    :param default_traversal_path: Traversal path through the docs
+    :param default_batch_size: Batch size to be used in the encoder model
+
     :param: on_gpu: If true, the GPU will be used. Make sure to have
         tensorflow-gpu==2.5 installed
     """
