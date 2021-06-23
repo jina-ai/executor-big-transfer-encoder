@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.python.keras.models import load_model
 
 from jina import DocumentArray, Executor, requests
-from jina.logging.predefined import default_logger
+from jina.logging.logger import JinaLogger
 
 
 class BigTransferEncoder(Executor):
@@ -69,7 +69,7 @@ class BigTransferEncoder(Executor):
         self.model_path = model_path
         self.model_name = model_name
         self.on_gpu = on_gpu
-        self.logger = default_logger
+        self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = self.DEFAULT_TRAVERSAL_PATHS if default_traversal_paths is None\
             else default_traversal_paths
