@@ -3,12 +3,12 @@ __license__ = "Apache-2.0"
 
 import os
 from typing import Optional, Dict, List, Any
+
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.models import load_model
-
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
+from tensorflow.python.keras.models import load_model
 
 
 class BigTransferEncoder(Executor):
@@ -54,14 +54,13 @@ class BigTransferEncoder(Executor):
     :param: on_gpu: If true, the GPU will be used. Make sure to have
         tensorflow-gpu==2.5 installed
     """
-    DEFAULT_TRAVERSAL_PATHS = ['r']
 
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
                  model_name: Optional[str] = 'R50x1',
                  channel_axis: int = 1,
                  on_gpu: bool = False,
-                 default_traversal_paths: Optional[List[str]] = None,
+                 default_traversal_paths: List[str] = ['r'],
                  default_batch_size: Optional[int] = None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,8 +70,7 @@ class BigTransferEncoder(Executor):
         self.on_gpu = on_gpu
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
-        self.default_traversal_paths = self.DEFAULT_TRAVERSAL_PATHS if default_traversal_paths is None\
-            else default_traversal_paths
+        self.default_traversal_paths = default_traversal_paths
 
         if not os.path.exists(self.model_path):
             self.download_model()
