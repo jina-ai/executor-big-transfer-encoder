@@ -78,7 +78,7 @@ def test_encoding_override_chunks():
     assert encoder.default_traversal_paths == ['r']
 
     encoder.encode(DocumentArray([doc]),
-                   parameters={'traversal_paths': 'c'})
+                   parameters={'traversal_paths': ['c']})
     assert doc.embedding is None
     for i in range(3):
         assert doc.chunks[i].embedding.shape == (2048,)

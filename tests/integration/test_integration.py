@@ -30,7 +30,7 @@ def test_all_models(model_name: str):
     os.environ['TRANSFER_MODEL_NAME'] = model_name
     with Flow.load_config(os.path.join(cur_dir, 'flow.yml')) as flow:
         data = flow.post(on='/index', inputs=data_generator(100),
-                         request_size=10)
+                         request_size=10, return_results=True)
         docs = data[0].docs
         for doc in docs:
             assert doc.embedding is not None
