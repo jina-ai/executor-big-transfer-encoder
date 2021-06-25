@@ -1,6 +1,6 @@
 jtype: BigTransferEncoder
 with:
-  {}
+  on_gpu: true
 metas:
   py_modules:
-    - jinahub.image.encoder.big_transfer
+    - big_transfer.py
