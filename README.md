@@ -62,9 +62,15 @@ The prebuilt images do currently not support GPU.
 Use the source codes from JinaHub in your python codes,
 
 ```python
-from jina import Flow
-	
+import numpy as np
+
+from jina import Flow, Document
+
 f = Flow().add(uses='jinahub://BigTransferEncoder')
+
+with f:
+    resp = f.post(on='foo', inputs=Document(blob=np.ones((96, 96, 3), dtype=np.float32)), return_results=True)
+    print(f'{resp[0].docs[0].embedding.shape}')
 ```
 
 or in the `.yml` config.

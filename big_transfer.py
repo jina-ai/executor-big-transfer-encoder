@@ -130,9 +130,8 @@ class BigTransferEncoder(Executor):
         Encode data into a ndarray of `B x D`.
         Where `B` is the batch size and `D` is the Dimension.
 
-        :param docs: an array in size `B`
+        :param docs: DocumentArray containing image data as an array
         :param parameters: parameters dictionary
-        :return: an ndarray in size `B x D`.
         """
         docs_batch_generator = self._get_docs_batch_generator(docs, parameters)
         for batch in docs_batch_generator:
