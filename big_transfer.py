@@ -15,8 +15,8 @@ class BigTransferEncoder(Executor):
     """
     :class:`BigTransferEncoder` is Big Transfer (BiT) presented by
     Google (https://github.com/google-research/big_transfer).
-    Uses pretrained BiT to encode data from a ndarray, potentially
-    B x (Channel x Height x Width) into a ndarray of `B x D`.
+    Uses pretrained BiT to encode data from a ndarray with shape
+    B x (Height x Width x Channels) into a ndarray of `B x D`.
     Internally, :class:`BigTransferEncoder` wraps the models from
     https://storage.googleapis.com/bit_models/.
 
@@ -44,10 +44,6 @@ class BigTransferEncoder(Executor):
             ├── variables.data-00000-of-00001
             └── variables.index
 
-    :param channel_axis: the axis id of the channel, -1 indicate the color
-        channel info at the last axis. If given other, then `
-        `np.moveaxis(data, channel_axis, -1)`` is performed before :meth:`encode`.
-
     :param default_traversal_paths: Traversal path through the docs
     :param default_batch_size: Batch size to be used in the encoder model
 
@@ -58,19 +54,17 @@ class BigTransferEncoder(Executor):
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
                  model_name: Optional[str] = 'R50x1',
-                 channel_axis: int = 1,
                  on_gpu: bool = False,
-                 default_traversal_paths: List[str] = ['r'],
+                 default_traversal_paths: List[str] = None,
                  default_batch_size: Optional[int] = None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.channel_axis = channel_axis
         self.model_path = model_path
         self.model_name = model_name
         self.on_gpu = on_gpu
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
-        self.default_traversal_paths = default_traversal_paths
+        self.default_traversal_paths = default_traversal_paths or ['r']
 
         if not os.path.exists(self.model_path):
             self.download_model()
@@ -138,8 +132,6 @@ class BigTransferEncoder(Executor):
             data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
             for index, doc in enumerate(batch):
                 data[index] = doc.blob
-            if self.channel_axis != -1:
-                data = np.moveaxis(data, self.channel_axis, -1)
             _output = self.model(self._get_input(data.astype(np.float32)))
             output = _output['output_1'].numpy()
             for index, doc in enumerate(batch):

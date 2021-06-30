@@ -16,7 +16,6 @@ def test_initialization_and_model_download():
     shutil.rmtree('pretrained', ignore_errors=True)
     # This call will download the model
     encoder = BigTransferEncoder()
-    assert encoder.channel_axis == 1
     assert encoder.model_path == 'pretrained'
     assert encoder.model_name == 'R50x1'
     assert not encoder.on_gpu

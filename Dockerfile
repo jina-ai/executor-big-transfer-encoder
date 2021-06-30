@@ -1,13 +1,8 @@
-FROM jinaai/jina:master as base
+FROM jinaai/jina:2.0
 
-COPY . ./big_transfer/
-WORKDIR ./big_transfer
+COPY . /big_transfer/
+WORKDIR /big_transfer
 
 RUN pip install .
 
-FROM base
-RUN pip install -r tests/requirements.txt
-RUN pytest -s -v tests
-
-FROM base
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
