@@ -47,7 +47,20 @@ f = Flow().add(uses='jinahub+docker://BigTransferEncoder')
 ```
 
 or in the `.yml` config.
-	
+
+You can either use a volume to mount an already downloaded model into the container
+```yaml
+jtype: Flow
+pods:
+  - name: encoder
+    uses: 'jinahub+docker://BigTransferEncoder'
+    volumes: '/your_pretrained/path:/big_transfer/pretrained'
+    with: 
+      model_path: '/big_transfer/pretrained'
+```
+
+or specify a model name which will download the model automatically.
+
 ```yaml
 jtype: Flow
 pods:
@@ -56,6 +69,8 @@ pods:
     with: 
       model_name: 'R50x1'
 ```
+
+
 The prebuilt images do currently not support GPU.  
 
 #### using source codes
