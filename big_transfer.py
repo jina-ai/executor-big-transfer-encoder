@@ -135,10 +135,15 @@ class BigTransferEncoder(Executor):
             needs_attr='blob'
         )
         for batch in docs_batch_generator:
-            data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
-            for index, doc in enumerate(batch):
-                data[index] = doc.blob
+
+            data = np.stack([d.blob for d in batch])
+            #data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
+            #for index, doc in enumerate(batch):
+            #    data[index] = doc.blob
             _output = self.model(self._get_input(data.astype(np.float32)))
             output = _output['output_1'].numpy()
             for index, doc in enumerate(batch):
                 doc.embedding = output[index]
+
+    def _preprocess(self):
+        pass
