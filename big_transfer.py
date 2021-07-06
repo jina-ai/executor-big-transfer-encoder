@@ -9,6 +9,7 @@ import tensorflow as tf
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from tensorflow.python.keras.models import load_model
+from jina_commons.batching import get_docs_batch_generator
 
 
 class BigTransferEncoder(Executor):
@@ -56,7 +57,7 @@ class BigTransferEncoder(Executor):
                  model_name: Optional[str] = 'R50x1',
                  on_gpu: bool = False,
                  default_traversal_paths: List[str] = None,
-                 default_batch_size: Optional[int] = None,
+                 default_batch_size: int = 32,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model_path = model_path
@@ -127,7 +128,12 @@ class BigTransferEncoder(Executor):
         :param docs: DocumentArray containing image data as an array
         :param parameters: parameters dictionary
         """
-        docs_batch_generator = self._get_docs_batch_generator(docs, parameters)
+        docs_batch_generator = get_docs_batch_generator(
+            docs,
+            traversal_path=parameters.get('traversal_paths', self.default_traversal_paths),
+            batch_size=parameters.get('batch_size', self.default_batch_size),
+            needs_attr='blob'
+        )
         for batch in docs_batch_generator:
             data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
             for index, doc in enumerate(batch):
@@ -136,19 +142,3 @@ class BigTransferEncoder(Executor):
             output = _output['output_1'].numpy()
             for index, doc in enumerate(batch):
                 doc.embedding = output[index]
-
-    def _get_docs_batch_generator(self, docs: DocumentArray, parameters: Dict):
-        traversal_paths = parameters.get('traversal_paths', self.default_traversal_paths)
-        batch_size = parameters.get('batch_size', self.default_batch_size)
-        if batch_size is None:
-            batch_size = docs.__len__()
-        flat_docs = docs.traverse_flat(traversal_paths)
-
-        filtered_docs = [doc for doc in flat_docs if doc is not None and doc.blob is not None]
-
-        return _batch_generator(filtered_docs, batch_size)
-
-
-def _batch_generator(data: List[Any], batch_size: Optional[int]):
-    for i in range(0, len(data), batch_size):
-        yield data[i:min(i + batch_size, len(data))]

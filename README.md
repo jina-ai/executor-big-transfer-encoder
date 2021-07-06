@@ -33,6 +33,16 @@ No prerequisites are required to run this executor. The executor automatically
 downloads the BiT model specified by `model_name`! Alternatively, you could also 
 download the model in advance and use the `model_path` parameter.
 
+In case you want to install the dependencies locally run 
+```
+pip install . 
+pip install -r tests/requirements.txt
+```
+To verify the installation works:
+```
+pytest tests
+```
+
 ## 🚀 Usages
 
 ### 🚚 Via JinaHub
