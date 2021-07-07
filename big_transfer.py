@@ -2,7 +2,7 @@ __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
 import os
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -10,6 +10,7 @@ from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 from tensorflow.python.keras.models import load_model
 from jina_commons.batching import get_docs_batch_generator
+from jina_commons.encoders.image.preprocessing import load_image, move_channel_axis, resize_short, crop_image
 
 
 class BigTransferEncoder(Executor):
@@ -44,18 +45,19 @@ class BigTransferEncoder(Executor):
         └── variables
             ├── variables.data-00000-of-00001
             └── variables.index
-
+    :param: on_gpu: If true, the GPU will be used. Make sure to have
+        tensorflow-gpu==2.5 installed
+    :param target_dim: preprocess the data image into shape of `target_dim`, (e.g. (256, 256, 3) ), if set to None then preoprocessing will not be conducted
     :param default_traversal_paths: Traversal path through the docs
     :param default_batch_size: Batch size to be used in the encoder model
 
-    :param: on_gpu: If true, the GPU will be used. Make sure to have
-        tensorflow-gpu==2.5 installed
     """
 
     def __init__(self,
                  model_path: Optional[str] = 'pretrained',
                  model_name: Optional[str] = 'R50x1',
                  on_gpu: bool = False,
+                 target_dim: Optional[Tuple[int, int, int]] = None,
                  default_traversal_paths: List[str] = None,
                  default_batch_size: int = 32,
                  *args, **kwargs):
@@ -63,6 +65,7 @@ class BigTransferEncoder(Executor):
         self.model_path = model_path
         self.model_name = model_name
         self.on_gpu = on_gpu
+        self.target_dim = target_dim
         self.logger = JinaLogger(self.__class__.__name__)
         self.default_batch_size = default_batch_size
         self.default_traversal_paths = default_traversal_paths or ['r']
@@ -135,10 +138,28 @@ class BigTransferEncoder(Executor):
             needs_attr='blob'
         )
         for batch in docs_batch_generator:
-            data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
+            if self.target_dim:
+                data = np.zeros((batch.__len__(),) + self.target_dim)
+            else:
+                data = np.zeros((batch.__len__(),) + batch[0].blob.shape)
             for index, doc in enumerate(batch):
-                data[index] = doc.blob
+                if self.target_dim:
+                    data[index] = self._preprocess(data[index])
+                else:
+                    data[index] = doc.blob
             _output = self.model(self._get_input(data.astype(np.float32)))
             output = _output['output_1'].numpy()
             for index, doc in enumerate(batch):
                 doc.embedding = output[index]
+
+    def _preprocess(self, blob: 'np.ndarray'):
+        img = load_image(blob)
+        img_mean = (0, 0, 0)
+        img_std = (1, 1, 1)
+        img = resize_short(img)
+        img, _, _ = crop_image(img, how='center', target_size=self.target_dim[0])
+        img = np.array(img).astype('float32') / 255
+        img -= img_mean
+        img /= img_std
+        img = move_channel_axis(img, channel_axis_to_move=-1, target_channel_axis=-1)
+        return img

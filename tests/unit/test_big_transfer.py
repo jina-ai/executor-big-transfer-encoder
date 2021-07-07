@@ -43,6 +43,21 @@ def test_encoding():
     assert doc.embedding.shape == (2048,)
 
 
+def test_preprocessing():
+    doc = Document(uri=os.path.join(directory, '../data/test_image.png'))
+    doc.convert_image_uri_to_blob()
+    img = Image.fromarray(doc.blob.astype('uint8'))
+    img = img.resize((96, 96))
+    img = np.array(img).astype('float32') / 255
+    doc.blob = img
+    assert doc.embedding is None
+
+    encoder = BigTransferEncoder(target_dim=(256, 256, 3))
+
+    encoder.encode(DocumentArray([doc]), {})
+    assert doc.embedding.shape == (2048,)
+
+
 def test_encoding_default_chunks():
     doc = Document(text="testing")
     chunk = Document(uri=os.path.join(directory, '../data/test_image.png'))
