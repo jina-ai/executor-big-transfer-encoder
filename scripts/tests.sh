@@ -6,6 +6,7 @@ root_dir=$(pwd)
 test_dir=$(pwd)/tests
 
 pip install wheel
+pip install -r requirements.txt
 pip install -r tests/requirements.txt
 pip install .
 pytest -s -v tests/
